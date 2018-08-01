@@ -41,7 +41,7 @@
     if (n === 0) {
       return [];
     }
-    return n === undefined ? array[array.length-1] : array.slice(-n);
+    return n === undefined ? array[array.length - 1] : array.slice(-n);
   };
 
   // Call iterator(value, key, collection) for each element of collection.
@@ -51,7 +51,7 @@
   // iterator function over each item in the input collection.
   _.each = function(collection, iterator) {
     if (Array.isArray(collection)) {
-      for (var i=0; i<collection.length; i++) {
+      for (var i = 0; i < collection.length; i++) {
         iterator(collection[i], i, collection);
       }
     } else if (typeof collection === 'object') {
@@ -105,15 +105,18 @@
     let result = [];
     let mutResult = [];
     let callback = iterator || _.identity;
-    if (isSorted) {
-      return result;
-    }
+    // if (isSorted) {
+    //   let start = 0;
+    //   let end = array.length;
+      
+    //   return result;
+    // }
     _.each(array, function(val) {
-        if (_.indexOf(mutResult, callback(val)) === -1) {
-           mutResult.push(callback(val));
-           result.push(val);
-        }
-      })
+      if (_.indexOf(mutResult, callback(val)) === -1) {
+        mutResult.push(callback(val));
+        result.push(val);
+      }
+    });
     // console.log(result);
     return result;
   };
@@ -208,7 +211,7 @@
     // TIP: Try re-using reduce() here.
     iterator = iterator || _.identity;
     return _.reduce(collection, function(result, val) {
-      if (result == false) {
+      if (!!result === false) {
         return false;
       }
       return !!iterator(val);
@@ -219,7 +222,11 @@
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    iterator = iterator || _.identity;
     
+    return !_.every(collection, function(val) {
+      return !iterator(val);
+    });
   };
 
 
@@ -241,12 +248,26 @@
   //   }, {
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
-  _.extend = function(obj) {
+  _.extend = function(obj, ...moreObj) {
+    _.each(moreObj, function(ele) {
+      for (var keys in ele) {
+        obj[keys] = ele[keys];
+      }
+    });
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
-  _.defaults = function(obj) {
+  _.defaults = function(obj, ...moreObj) {
+    _.each(moreObj, function(ele) {
+      for (var keys in ele) {
+        if (obj[keys] === undefined) {
+          obj[keys] = ele[keys];
+        }
+      }
+    });
+    return obj;    
   };
 
 
@@ -290,6 +311,16 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    let cache = {};
+    return function() {
+      let key = JSON.stringify(arguments);
+      if (cache[key] === undefined) {
+        cache[key] = func.apply(this, arguments);
+        return cache[key];
+      } else {
+        return cache[key];
+      }
+    };
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -298,7 +329,8 @@
   // The arguments for the original function are passed after the wait
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
-  _.delay = function(func, wait) {
+  _.delay = function(func, wait, ...params) {
+    setTimeout(func, wait, ...params);
   };
 
 
@@ -313,6 +345,14 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    let result = array.slice();
+    _.each(result, function(ele, index) {
+      let targetIndex = Math.floor(Math.random() * (result.length - 1));
+      let temp = result[targetIndex];
+      result[targetIndex] = ele;
+      result[index] = temp;
+    });
+    return result;
   };
 
 
